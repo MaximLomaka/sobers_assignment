@@ -1,5 +1,4 @@
 import abc
-# import pandas as pd
 import csv
 import datetime
 
@@ -22,14 +21,12 @@ If you need to process a new file you should inherit from this class and realize
     def dict_rename_key(iterable, old_key, new_key):
         """
         dict_rename_key method
-
         Args:
-            iterable (dict): [description]
-            old_key (string): [description]
-            new_key (string): [description]
-
+            iterable (dict)
+            old_key (string)
+            new_key (string)
         Returns:
-            dict: [description]
+            dict
         """
         if isinstance(iterable, dict):
             for key in list(iterable.keys()):
@@ -73,7 +70,6 @@ class Bank3(DfPrep):
             reader = csv.DictReader(csvfile)
             for row in reader:
                 row['amounts'] = f"{row['euro']}.{row['cents']}"
-                # row['amounts'] = row['euro'] + '.' + row['cents']
                 for old_name, new_name in renamed_columns.items():
                     self.dict_rename_key(row, old_name, new_name)
                 row['date'] = datetime.datetime.strptime(row['date'], '%d %b %Y').strftime('%d.%m.%Y')

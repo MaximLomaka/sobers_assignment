@@ -11,12 +11,10 @@ class Process:
     def row_list(self):
         return [rows.get_prep_df() for rows in self.files]
 
-    @staticmethod
-    def _remove_columns(row_list):
-        removed_columns = ['date_readable', 'euro', 'cents']
+    def _remove_columns(self, row_list):
 
         for row in row_list:
-            for removed_column in removed_columns:
+            for removed_column in self.columns_to_drop:
                 if removed_column in row:
                     row.pop(removed_column)
         return row_list
