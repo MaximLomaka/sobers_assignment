@@ -1,49 +1,81 @@
 import abc
-import pandas as pd
+# import pandas as pd
+import csv
+import datetime
 
 
-class DfPrep(abc.ABC):
+class DfPrep:
     """
 this class using for the basic interface. 
 If you need to process a new file you should inherit from this class and realize abstract methods 
     """
 
-    def __init__(self, df):
-        self.df = pd.read_csv(df)
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.date_format = '%d-%m-%Y'
 
     @abc.abstractmethod
-    def get_df(self):
+    def get_prep_df(self):
         pass
 
-    @abc.abstractmethod
-    def _prep(self):
-        pass
+    @staticmethod
+    def dict_rename_key(iterable, old_key, new_key):
+        """
+        dict_rename_key method
+
+        Args:
+            iterable (dict): [description]
+            old_key (string): [description]
+            new_key (string): [description]
+
+        Returns:
+            dict: [description]
+        """
+        if isinstance(iterable, dict):
+            for key in list(iterable.keys()):
+                if key == old_key:
+                    iterable[new_key] = iterable.pop(key)
+        return iterable
 
 
 class Bank1(DfPrep):
-    def _prep(self):
-        self.df = self.df.rename({'timestamp': 'date', 'type': 'transaction', 'amount': 'amounts'}, axis=1)
 
-    def get_df(self):
-        self._prep()
-        return self.df
+    def get_prep_df(self):
+        row_list = []
+        renamed_columns = {'timestamp': 'date', 'type': 'transaction', 'amount': 'amounts'}
+        with open(self.file_path, newline='') as csv_file:
+            reader = csv.DictReader(csv_file)
+            for row in reader:
+                for old_name, new_name in renamed_columns.items():
+                    self.dict_rename_key(row, old_name, new_name)
+                row['date'] = datetime.datetime.strptime(row['date'], '%b %d %Y').strftime(self.date_format)
+
+                row_list.append(row)
+        return row_list
 
 
 class Bank2(DfPrep):
 
-    def get_df(self):
-        self._prep()
-        return self.df
-
-    def _prep(self):
-        pass
+    def get_prep_df(self):
+        row_list = []
+        with open(self.file_path, newline='') as csv_file:
+            reader = csv.DictReader(csv_file)
+            for row in reader:
+                row_list.append(row)
+        return row_list
 
 
 class Bank3(DfPrep):
-    def _prep(self):
-        self.df = self.df.rename({'date_readable': 'date', 'type': 'transaction'}, axis=1)
-        self.df = self.df.assign(amounts=self.df['euro'].astype(str) + '.' + self.df['cents'].astype(str))
-
-    def get_df(self):
-        self._prep()
-        return self.df
+    def get_prep_df(self):
+        renamed_columns = {'date_readable': 'date', 'type': 'transaction'}
+        row_list = []
+        with open(self.file_path, newline='') as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                row['amounts'] = f"{row['euro']}.{row['cents']}"
+                # row['amounts'] = row['euro'] + '.' + row['cents']
+                for old_name, new_name in renamed_columns.items():
+                    self.dict_rename_key(row, old_name, new_name)
+                row['date'] = datetime.datetime.strptime(row['date'], '%d %b %Y').strftime('%d.%m.%Y')
+                row_list.append(row)
+        return row_list

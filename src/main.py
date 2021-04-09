@@ -9,4 +9,5 @@ if __name__ == '__main__':
         Bank3('data/bank3.csv')
     )
     process = Process(dfs, columns_to_drop)
-    process.write_to_file('result.csv')
+    process.write_to_file('result')
+
